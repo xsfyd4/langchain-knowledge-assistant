@@ -91,10 +91,12 @@ OPENAI_MODEL=gpt-4o-mini
 
 ```dotenv
 LLM_PROVIDER=openai
-OPENAI_API_KEY=你的_API_KEY
-OPENAI_BASE_URL=https://api.siliconflow.cn/v1
-OPENAI_MODEL=Qwen/Qwen2.5-7B-Instruct
+OPENAI_API_KEY=你的_DeepSeek_API_KEY
+OPENAI_BASE_URL=https://api.deepseek.com
+OPENAI_MODEL=deepseek-chat
 ```
+
+项目已使用 DeepSeek 的 `deepseek-chat` 模型完成真实问答、多轮追问和无资料拒答测试。其他兼容 OpenAI 的工具调用接口也可按同样方式接入。
 
 ### 3. 配置 Ollama 离线模型
 

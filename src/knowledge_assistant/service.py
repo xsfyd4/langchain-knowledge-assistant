@@ -107,6 +107,8 @@ class AssistantService:
                 model=self.runtime.model_name,
             )
 
+        relevance_floor = hits[0].score * 0.55
+        hits = [hit for hit in hits if hit.score >= relevance_floor]
         sources = self._make_sources(hits, question)
         if self.runtime.llm is None:
             answer = self._demo_answer(question, sources)

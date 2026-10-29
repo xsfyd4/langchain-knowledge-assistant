@@ -633,7 +633,38 @@ button {
   color: var(--ink-soft);
   font-size: 13px;
   line-height: 1.88;
-  white-space: pre-wrap;
+}
+
+.answer-text p {
+  margin: 0 0 9px;
+}
+
+.answer-text p:last-child {
+  margin-bottom: 0;
+}
+
+.answer-text ul,
+.answer-text ol {
+  margin: 3px 0 10px;
+  padding-left: 21px;
+}
+
+.answer-text li {
+  margin: 2px 0;
+  padding-left: 2px;
+}
+
+.answer-text strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.answer-text code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--paper);
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 11px;
 }
 
 .citation {

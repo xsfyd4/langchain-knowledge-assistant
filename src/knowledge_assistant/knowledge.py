@@ -13,6 +13,26 @@ HEADING_RE = re.compile(r"^#{1,4}\s+(.+?)\s*$", re.MULTILINE)
 TOKEN_RE = re.compile(r"[a-z0-9]+|[\u3400-\u9fff]+")
 SENTENCE_RE = re.compile(r"(?<=[。！？；.!?;])\s*|\n+")
 SUPPORTED_SUFFIXES = {".md", ".markdown", ".txt"}
+QUERY_STOP_CHARS = set(
+    "的了吗呢是在有和与及或把被对为请问如何多少几什么哪谁公司员工可以应该需要能否是否提供相关制度规定"
+)
+QUERY_STOP_TOKENS = {
+    "公司",
+    "员工",
+    "可以",
+    "应该",
+    "需要",
+    "是否",
+    "提供",
+    "相关",
+    "制度",
+    "规定",
+    "如何",
+    "多少",
+    "什么",
+    "怎么",
+    "请问",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,16 +100,23 @@ class KnowledgeBase:
         return list(self._documents)
 
     def search(self, query: str, top_k: int = 4) -> list[SearchHit]:
-        query_tokens = _tokenize(query)
+        query_tokens = _query_tokenize(query)
         if not query_tokens:
             return []
 
         query_counts = Counter(query_tokens)
+        strong_query_tokens = {
+            token for token in query_counts if len(token) > 1 or token.isascii()
+        }
         total = len(self._chunks)
         scores: list[tuple[float, KnowledgeChunk]] = []
 
         for chunk, tokens in zip(self._chunks, self._tokens, strict=True):
             token_counts = Counter(tokens)
+            if strong_query_tokens and not any(
+                token in token_counts for token in strong_query_tokens
+            ):
+                continue
             score = 0.0
             for token, query_tf in query_counts.items():
                 tf = token_counts.get(token, 0)
@@ -231,11 +258,28 @@ def _tokenize(text: str) -> list[str]:
     return tokens
 
 
+def _query_tokenize(text: str) -> list[str]:
+    tokens: list[str] = []
+    for token in _tokenize(text):
+        if token in QUERY_STOP_TOKENS:
+            continue
+        if len(token) == 1 and token in QUERY_STOP_CHARS:
+            continue
+        if (
+            len(token) == 2
+            and all("\u3400" <= char <= "\u9fff" for char in token)
+            and any(char in QUERY_STOP_CHARS for char in token)
+        ):
+            continue
+        tokens.append(token)
+    return tokens
+
+
 def excerpt_for_query(text: str, query: str, limit: int = 360) -> str:
     """从命中段落中按原文顺序选取相关信息。"""
 
     sentences = [item.strip() for item in SENTENCE_RE.split(text) if item.strip()]
-    query_tokens = set(_tokenize(query))
+    query_tokens = set(_query_tokenize(query))
     scored = [
         (len(query_tokens.intersection(_tokenize(sentence))), index, sentence)
         for index, sentence in enumerate(sentences)

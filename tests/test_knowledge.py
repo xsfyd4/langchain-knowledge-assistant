@@ -37,6 +37,10 @@ class KnowledgeBaseTest(unittest.TestCase):
         self.assertEqual("information-security.md", hits[0].chunk.source)
         self.assertIn("400-800-2718", hits[0].chunk.text)
 
+    def test_unrelated_question_has_no_hits(self) -> None:
+        hits = self.knowledge.search("公司是否提供员工股权激励？", top_k=3)
+        self.assertEqual([], hits)
+
     def test_chunk_text_respects_size_and_overlap(self) -> None:
         text = "。" .join(["这是一个用于测试自然语言分块的句子"] * 80) + "。"
         chunks = chunk_text(text, max_chars=180, overlap=30)

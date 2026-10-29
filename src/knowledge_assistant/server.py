@@ -6,6 +6,7 @@ import json
 import mimetypes
 import os
 import sys
+import traceback
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -76,6 +77,7 @@ def make_handler(service: AssistantService) -> type[BaseHTTPRequestHandler]:
             except ValueError as exc:
                 self._json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
             except Exception:
+                traceback.print_exc()
                 print("回答生成失败：", file=sys.stderr)
                 self._json(
                     HTTPStatus.INTERNAL_SERVER_ERROR,

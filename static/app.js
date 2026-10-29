@@ -159,7 +159,7 @@ function addAssistantMessage(content, sources = [], isError = false) {
 
   const answer = document.createElement("div");
   answer.className = "answer-text";
-  appendCitationText(answer, content);
+  renderAnswer(answer, content);
   body.append(answer);
 
   if (sources.length) {
@@ -171,15 +171,57 @@ function addAssistantMessage(content, sources = [], isError = false) {
   scrollToBottom();
 }
 
-function appendCitationText(container, text) {
-  const parts = String(text).split(/(\[资料\d+\])/g);
+function renderAnswer(container, text) {
+  let currentList = null;
+  let currentListType = null;
+
+  for (const rawLine of String(text).split("\n")) {
+    const line = rawLine.trimEnd();
+    const bullet = line.match(/^\s*[-*]\s+(.+)$/);
+    const numbered = line.match(/^\s*\d+[.)]\s+(.+)$/);
+
+    if (bullet || numbered) {
+      const listType = bullet ? "ul" : "ol";
+      if (!currentList || currentListType !== listType) {
+        currentList = document.createElement(listType);
+        currentListType = listType;
+        container.append(currentList);
+      }
+      const item = document.createElement("li");
+      appendInlineContent(item, (bullet || numbered)[1]);
+      currentList.append(item);
+      continue;
+    }
+
+    currentList = null;
+    currentListType = null;
+    if (!line.trim()) {
+      continue;
+    }
+    const paragraph = document.createElement("p");
+    appendInlineContent(paragraph, line);
+    container.append(paragraph);
+  }
+}
+
+function appendInlineContent(container, text) {
+  const parts = String(text).split(/(\*\*[^*]+\*\*|`[^`]+`|\[资料\d+\])/g);
   for (const part of parts) {
-    if (/^\[资料\d+\]$/.test(part)) {
+    if (!part) continue;
+    if (/^\*\*[^*]+\*\*$/.test(part)) {
+      const strong = document.createElement("strong");
+      strong.textContent = part.slice(2, -2);
+      container.append(strong);
+    } else if (/^`[^`]+`$/.test(part)) {
+      const code = document.createElement("code");
+      code.textContent = part.slice(1, -1);
+      container.append(code);
+    } else if (/^\[资料\d+\]$/.test(part)) {
       const citation = document.createElement("span");
       citation.className = "citation";
       citation.textContent = part;
       container.append(citation);
-    } else if (part) {
+    } else {
       container.append(document.createTextNode(part));
     }
   }
