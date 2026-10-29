@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="基于 LangChain 的企业知识库智能问答助手" />
+    <title>知问 · 企业知识库助手</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-glow page-glow-one"></div>
+    <div class="page-glow page-glow-two"></div>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="知问首页">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" role="img">
+              <path d="M8 7.5h11.5a5 5 0 0 1 5 5V25H13a5 5 0 0 1-5-5V7.5Z"></path>
+              <path d="M13 13h7M13 17h5"></path>
+              <circle cx="24.5" cy="8.5" r="4.5"></circle>
+            </svg>
+          </span>
+          <span>
+            <strong>知问</strong>
+            <small>KNOWLEDGE ASSISTANT</small>
+          </span>
+        </a>
+
+        <div class="topbar-actions">
+          <div class="status-badge" id="statusBadge">
+            <span class="status-dot"></span>
+            <span id="statusText">正在连接</span>
+          </div>
+          <button class="icon-button" id="clearButton" type="button" aria-label="清空对话" title="清空对话">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="knowledge-panel">
+          <div class="panel-heading">
+            <span class="eyebrow">KNOWLEDGE BASE</span>
+            <h1>企业知识库</h1>
+            <p>回答只来自下列资料，并逐条标注出处。</p>
+          </div>
+
+          <div class="knowledge-stats">
+            <div>
+              <strong id="documentCount">—</strong>
+              <span>份文档</span>
+            </div>
+            <div>
+              <strong id="chunkCount">—</strong>
+              <span>个知识片段</span>
+            </div>
+          </div>
+
+          <div class="document-list" id="documentList" aria-live="polite">
+            <div class="document-skeleton"></div>
+            <div class="document-skeleton short"></div>
+            <div class="document-skeleton"></div>
+          </div>
+
+          <div class="panel-note">
+            <span class="note-number">01</span>
+            <div>
+              <strong>资料边界</strong>
+              <p>知识库没有答案时，助手会明确说明，不会凭空补全。</p>
+            </div>
+          </div>
+
+          <div class="panel-note">
+            <span class="note-number">02</span>
+            <div>
+              <strong>可追溯</strong>
+              <p>点击回答下方的资料卡片，可核对原文摘要与命中位置。</p>
+            </div>
+          </div>
+        </aside>
+
+        <section class="chat-panel" aria-label="智能问答">
+          <div class="chat-heading">
+            <div>
+              <span class="eyebrow">LANGCHAIN · RAG</span>
+              <h2>制度问答</h2>
+            </div>
+            <div class="model-chip">
+              <span class="model-pulse"></span>
+              <span id="modelName">初始化中</span>
+            </div>
+          </div>
+
+          <div class="messages" id="messages">
+            <section class="welcome" id="welcome">
+              <div class="welcome-orb" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <p class="welcome-kicker">你好，我是知问</p>
+              <h3>从制度文件里，<br />找到可以直接行动的答案。</h3>
+              <p class="welcome-copy">
+                我会先检索企业知识库，再由大模型依据资料组织回答。每个结论都能回到原文。
+              </p>
+              <div class="suggestions" id="suggestions">
+                <button type="button" data-question="年假有多少天？如何申请？">
+                  <span>假期制度</span>
+                  年假有多少天？如何申请？
+                </button>
+                <button type="button" data-question="出差住宿费的报销标准是多少？">
+                  <span>费用标准</span>
+                  出差住宿费的报销标准是多少？
+                </button>
+                <button type="button" data-question="发现疑似数据泄露时应该怎么做？">
+                  <span>安全应急</span>
+                  发现疑似数据泄露时应该怎么做？
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div class="composer-wrap">
+            <form class="composer" id="chatForm">
+              <label class="sr-only" for="questionInput">输入问题</label>
+              <textarea
+                id="questionInput"
+                name="question"
+                rows="1"
+                maxlength="2000"
+                placeholder="询问假期、报销、安全规范……"
+                autocomplete="off"
+              ></textarea>
+              <button class="send-button" id="sendButton" type="submit" aria-label="发送问题">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m5 12 14-7-4.5 14-3-5.5L5 12Z"></path>
+                  <path d="m11.5 13.5 3-3"></path>
+                </svg>
+              </button>
+            </form>
+            <p class="composer-tip">
+              Enter 发送 · Shift + Enter 换行
+              <span>回答由 AI 生成，请以原始制度文件为准</span>
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>ZHĪWÈN / 知问</span>
+        <span>第七章 · 智能应用开发</span>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>
+

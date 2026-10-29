@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zhiwen-knowledge-assistant"
+version = "1.0.0"
+description = "基于 LangChain 的企业知识库智能问答应用"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+  "langchain-core>=0.3.0,<2.0.0",
+  "langchain-openai>=0.3.0,<2.0.0",
+  "langchain-ollama>=0.2.0,<2.0.0",
+  "python-dotenv>=1.0.0,<2.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
