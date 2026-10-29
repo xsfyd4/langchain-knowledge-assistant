@@ -22,6 +22,8 @@ const elements = {
 };
 
 let toastTimer;
+let statusRetryTimer;
+let statusRetryCount = 0;
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -38,22 +40,32 @@ async function api(path, options = {}) {
 async function loadStatus() {
   try {
     const status = await api("/api/health");
-    state.mode = status.mode;
-    elements.documentCount.textContent = status.documents.length;
-    elements.chunkCount.textContent = status.chunk_count;
-    renderDocuments(status.documents);
-
-    const isDemo = status.mode === "demo";
-    elements.statusBadge.className = `status-badge ${isDemo ? "demo" : "ready"}`;
-    elements.statusText.textContent = isDemo ? "演示模式" : "知识库已就绪";
-    elements.modelName.textContent = `${providerLabel(status.mode)} · ${status.model}`;
-    elements.modelName.parentElement.className = `model-chip ${isDemo ? "demo" : "ready"}`;
+    statusRetryCount = 0;
+    applyStatus(status);
   } catch (error) {
     elements.statusBadge.className = "status-badge";
     elements.statusText.textContent = "连接失败";
     elements.modelName.textContent = "服务未连接";
     showToast(error.message);
+    if (statusRetryCount < 5) {
+      statusRetryCount += 1;
+      clearTimeout(statusRetryTimer);
+      statusRetryTimer = setTimeout(loadStatus, 2000);
+    }
   }
+}
+
+function applyStatus(status) {
+  state.mode = status.mode;
+  elements.documentCount.textContent = status.documents.length;
+  elements.chunkCount.textContent = status.chunk_count;
+  renderDocuments(status.documents);
+
+  const isDemo = status.mode === "demo";
+  elements.statusBadge.className = `status-badge ${isDemo ? "demo" : "ready"}`;
+  elements.statusText.textContent = isDemo ? "演示模式" : "知识库已就绪";
+  elements.modelName.textContent = `${providerLabel(status.mode)} · ${status.model}`;
+  elements.modelName.parentElement.className = `model-chip ${isDemo ? "demo" : "ready"}`;
 }
 
 function providerLabel(mode) {
@@ -286,6 +298,9 @@ async function ask(question) {
       method: "POST",
       body: JSON.stringify({ question: cleaned, history }),
     });
+    if (elements.statusText.textContent === "连接失败") {
+      await loadStatus();
+    }
     typing.remove();
     addAssistantMessage(response.answer, response.sources);
     state.messages.push({ role: "assistant", content: response.answer });
