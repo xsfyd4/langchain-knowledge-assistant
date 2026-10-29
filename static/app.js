@@ -88,11 +88,11 @@ function renderDocuments(documents) {
     return;
   }
 
-  documents.forEach((document, index) => {
+  documents.forEach((documentInfo, index) => {
     const item = document.createElement("div");
     item.className = "document-item";
     item.style.animationDelay = `${index * 70}ms`;
-    const filename = document.title.replace(/\.[^.]+$/, "");
+    const filename = documentInfo.title.replace(/\.[^.]+$/, "");
     item.innerHTML = `
       <span class="document-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24">
@@ -106,8 +106,8 @@ function renderDocuments(documents) {
       </span>
       <span class="document-count">${document.chunk_count} 段</span>
     `;
-    item.querySelector("strong").textContent = document.title;
-    item.title = document.source;
+    item.querySelector("strong").textContent = documentInfo.title;
+    item.title = documentInfo.source;
     elements.documentList.append(item);
   });
 }
